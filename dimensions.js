@@ -85,6 +85,13 @@ dimensions.Device.prototype.connect = function() {
             'minifig': ID_TO_MINIFIG_[signature] || null,
             'id': signature
         });
+        if(action == dimensions.Action.ADD) {
+          this.write([0x55, 0x04, 0xD2, 0x21, 0x00, 0x26])
+        }
+      } else if (cmd == 0x12) { // Tag Type
+        this.write([0x55, 0x0A, 0xD4, 0x0C, 0x22, 0x92, 0x58, 0xfb, 0xe6, 0x29, 0x0a, 0xe7 ])
+      } else if (cmd == 0x0A) { // Character Type
+         console.log(getHexSignature_(data));
       } else if (cmd == 0x01) { // LED change
       } else if (cmd == 0x19) { // connected
         this.emit('connected');
@@ -108,6 +115,26 @@ dimensions.Device.prototype.connect = function() {
       0x00, 0x00, 0x00, 0x00]);
 };
 
+dimensions.Device.prototype.checksum = function(data) {
+  var checksum = 0;
+  for (var i = 0; i < data.length; i++) {
+    checksum += data[i];
+  }
+  data.push(checksum & 0xFF);
+  return data;
+}
+
+dimensions.Device.prototype.pad = function(data) {
+  while(data.length < 32) {
+    data.push(0x00);
+  }
+  return data;
+}
+
+dimensions.Device.prototype.write = function(data) {
+  this.hidDevice_.write(this.pad(this.checksum(data)));
+}
+
 dimensions.Device.prototype.updatePanel = function(panel, color, opt_speed) {
   if (typeof opt_speed !== 'number') {
     opt_speed = 0.7;
@@ -120,22 +147,9 @@ dimensions.Device.prototype.updatePanel = function(panel, color, opt_speed) {
     (color >> 8) & 0xFF,
     color & 0xFF
   ];
-  var checksum = 0;
-  for (var i = 0; i < data.length; i++) {
-    checksum += data[i];
-  }
-  var checksumValue = (checksum - 0xe1) & 0xFF;
 
   this.colourUpdateNumber_++;
-  this.hidDevice_.write([0x55, 0x08, 0xc2]
-      .concat(data)
-      .concat([checksumValue])
-      .concat([
-          0x00, 0x00, 0x00, 0x00,
-          0x00, 0x00, 0x00, 0x00,
-          0x00, 0x00, 0x00, 0x00,
-          0x00, 0x00, 0x00, 0x00,
-          0x00, 0x00, 0x00, 0x00, 0x00]));
+  this.write([0x55, 0x08, 0xc2].concat(data));
 };
 
 module.exports = dimensions;
