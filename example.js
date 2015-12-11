@@ -32,3 +32,5 @@ device.on('minifig-scan', function(e) {
     }
   }
 });
+
+device.close();

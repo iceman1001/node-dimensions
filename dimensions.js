@@ -72,7 +72,7 @@ util.inherits(dimensions.Device, EventEmitter);
 
 dimensions.Device.prototype.connect = function() {
   this.hidDevice_ = new HID.HID(VENDOR_ID_, PRODUCT_ID_);
-
+  
   this.hidDevice_.on('data', function(data) {
       var cmd = data[1];
       if (cmd == 0x0b) { // minifg scanned
@@ -103,8 +103,8 @@ dimensions.Device.prototype.connect = function() {
   this.hidDevice_.on('error', function(error) {
     this.emit('error', error);
   }.bind(this));
-
-  this.hidDevice_.write([
+ 
+  this.hidDevice_.write([0x00,
       0x55, 0x0f, 0xb0, 0x01,
       0x28, 0x63, 0x29, 0x20,
       0x4c, 0x45, 0x47, 0x4f,
@@ -113,6 +113,13 @@ dimensions.Device.prototype.connect = function() {
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00]);
+
+};
+
+dimensions.Device.prototype.close = function() {
+	this.hidDevice_.removeAllListeners("data");
+	//this.hidDevice_.write([EndPoint, 1, EndOfCommandToken]);
+	this.hidDevice_.close();
 };
 
 dimensions.Device.prototype.checksum = function(data) {
