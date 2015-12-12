@@ -47,7 +47,8 @@ var CODE_TO_PANEL_ = {
 
 var ID_TO_MINIFIG_ = {
    '4b 2b ea 0b 40 81': dimensions.Minifig.WILDSTYLE,
-   '24 51 ba 0d 40 81': dimensions.Minifig.BATMAN,
+   //'24 51 ba 0d 40 81': dimensions.Minifig.BATMAN,
+   '1b b4 42 71 40 80' : dimensions.Minifig.BATMAN,
    '60 62 6a 08 40 80': dimensions.Minifig.GANDALF,
    '66 d2 9a 70 40 80': dimensions.Minifig.BATMOBIL
 };
@@ -72,7 +73,7 @@ util.inherits(dimensions.Device, EventEmitter);
 
 dimensions.Device.prototype.connect = function() {
   this.hidDevice_ = new HID.HID(VENDOR_ID_, PRODUCT_ID_);
-  
+   
   this.hidDevice_.on('data', function(data) {
       var cmd = data[1];
       if (cmd == 0x0b) { // minifg scanned
@@ -139,7 +140,7 @@ dimensions.Device.prototype.pad = function(data) {
 }
 
 dimensions.Device.prototype.write = function(data) {
-  this.hidDevice_.write(this.pad(this.checksum(data)));
+  this.hidDevice_.write([0x00].concat(this.pad(this.checksum(data))));
 }
 
 dimensions.Device.prototype.updatePanel = function(panel, color, opt_speed) {

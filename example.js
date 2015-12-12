@@ -11,10 +11,11 @@ minifigColors[dimensions.Minifig.WILDSTYLE] = 0x10109E;
 minifigColors[dimensions.Minifig.GANDALF] = 0x996644;
 
 var device = new dimensions.Device();
-device.connect();
 device.on('connected', function() {
   console.log('connected');
 });
+device.connect();
+
 device.on('minifig-scan', function(e) {
   if (e.action == dimensions.Action.ADD) {
     panels[e.panel][e.minifig] = true;
@@ -33,4 +34,4 @@ device.on('minifig-scan', function(e) {
   }
 });
 
-device.close();
+//device.close();
